@@ -106,6 +106,23 @@ tailscale serve --bg --https=443 http://127.0.0.1:8080
 
 Use the resulting `https://<host>.<tailnet>.ts.net` value as `http.public_origin`. Keep Orbit bound to `127.0.0.1` when Tailscale Serve runs on the same host. Trust `127.0.0.1/32` and `::1/128`, not the whole tailnet, unless a separate tailnet proxy sends forwarding headers.
 
+## Coolify and Cloudflare Tunnel
+
+In production Orbit treats a request as HTTPS only when the connecting peer is in `http.trusted_proxies` and sends `X-Forwarded-Proto: https`. Anything else is rejected with the `https_required` problem. On Coolify the peer is `cloudflared` or the Coolify proxy on a Docker bridge network, so loopback-only trust fails.
+
+1. Set `http.public_origin` to the tunnel hostname, for example `https://orbit.example.com`, and keep `bind = "0.0.0.0"`.
+2. Trust the Docker network the proxy connects from. Find it with `docker network inspect coolify` on the host and set it either in `config/orbit.toml` or as a Coolify environment variable, which overrides the file and avoids the persisted `/etc/orbit` volume:
+
+   ```bash
+   ORBIT__HTTP__TRUSTED_PROXIES=172.18.0.0/16
+   ```
+
+   `172.16.0.0/12,10.0.0.0/8` covers the default Docker ranges when the exact subnet is unknown.
+3. Point the Cloudflare Tunnel public hostname directly at the Orbit container, `http://<container-name>:3013`. `cloudflared` sets `X-Forwarded-Proto: https` itself. If the tunnel targets the Coolify proxy instead, that proxy rewrites the header to `http` unless its entrypoint trusts forwarded headers from the `cloudflared` address.
+4. Do not publish port 3013 on the host. The tunnel is the only ingress.
+
+Verify with `curl -sI https://orbit.example.com/`; a `200` with a `strict-transport-security` header means the proxy boundary is trusted.
+
 ## Migration, backup, and restore
 
 Inspect and run migrations while Orbit is stopped:
