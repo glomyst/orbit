@@ -27,6 +27,7 @@ RUN apk add --no-cache bash ca-certificates tzdata \
     && mkdir -p /var/lib/orbit /var/backups/orbit /etc/orbit \
     && chown -R 65532:65532 /var/lib/orbit /var/backups/orbit /etc/orbit
 COPY --from=server /orbit /orbit
+COPY config/orbit.toml /etc/orbit/orbit.toml
 USER 65532:65532
 VOLUME ["/var/lib/orbit", "/var/backups/orbit", "/etc/orbit"]
 EXPOSE 8080
