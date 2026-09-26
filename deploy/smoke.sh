@@ -15,7 +15,7 @@ docker run -d --name "$name" --read-only --cap-drop ALL --security-opt no-new-pr
   -e ORBIT__HTTP__PUBLIC_ORIGIN=https://orbit.test \
   -e "ORBIT__HTTP__TRUSTED_PROXIES=127.0.0.1/32,$proxy/32" "$image" >/dev/null
 url="http://$(docker port "$name" 3013/tcp)"
-ready() {
+ready() {"10.0.1.0/24"
   url="http://$(docker port "$name" 3013/tcp)"
   for _ in $(seq 1 60); do
     if curl --max-time 3 -fsS -H 'X-Forwarded-Proto: https' "$url/health/ready" >"$tmp/ready" 2>/dev/null; then return; fi
