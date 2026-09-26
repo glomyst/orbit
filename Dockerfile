@@ -30,7 +30,7 @@ COPY --from=server /orbit /orbit
 COPY config/orbit.toml /etc/orbit/orbit.toml
 USER 65532:65532
 VOLUME ["/var/lib/orbit", "/var/backups/orbit", "/etc/orbit"]
-EXPOSE 8080
+EXPOSE 3013
 HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=10 CMD ["/orbit", "--config", "/etc/orbit/orbit.toml", "healthcheck"]
 ENTRYPOINT ["/orbit", "--config", "/etc/orbit/orbit.toml"]
 CMD ["serve"]

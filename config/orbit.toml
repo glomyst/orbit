@@ -4,7 +4,7 @@ environment = "production"
 [http]
 # 0.0.0.0 works for containers and Tailscale interfaces. Firewall the port.
 bind = "0.0.0.0"
-port = 8080
+port = 3013
 public_origin = "https://orbit.afsah.dev"
 # Trust only the local reverse proxy or the exact proxy network you operate.
 trusted_proxies = ["127.0.0.1/32", "::1/128"]

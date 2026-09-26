@@ -9,14 +9,14 @@ cleanup() { docker rm -fv "$name" >/dev/null 2>&1 || true; rm -rf "$tmp"; }
 trap cleanup EXIT
 proxy=$(docker network inspect bridge --format '{{(index .IPAM.Config 0).Gateway}}')
 docker run -d --name "$name" --read-only --cap-drop ALL --security-opt no-new-privileges:true \
-  --tmpfs /tmp:size=64m,mode=1777 -p 127.0.0.1::8080 \
+  --tmpfs /tmp:size=64m,mode=1777 -p 127.0.0.1::3013 \
   -v "$root/deploy/orbit.toml:/etc/orbit/orbit.toml:ro" \
   -e ORBIT__ENVIRONMENT=production \
   -e ORBIT__HTTP__PUBLIC_ORIGIN=https://orbit.test \
   -e "ORBIT__HTTP__TRUSTED_PROXIES=127.0.0.1/32,$proxy/32" "$image" >/dev/null
-url="http://$(docker port "$name" 8080/tcp)"
+url="http://$(docker port "$name" 3013/tcp)"
 ready() {
-  url="http://$(docker port "$name" 8080/tcp)"
+  url="http://$(docker port "$name" 3013/tcp)"
   for _ in $(seq 1 60); do
     if curl --max-time 3 -fsS -H 'X-Forwarded-Proto: https' "$url/health/ready" >"$tmp/ready" 2>/dev/null; then return; fi
     sleep 1
